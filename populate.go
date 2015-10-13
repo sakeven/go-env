@@ -34,6 +34,26 @@ func Decode(i interface{}) error {
 
 }
 
+func indirect(v reflect.Value) reflect.Value {
+	if v.Kind() != reflect.Ptr && v.CanAddr() {
+		v = v.Addr()
+	}
+
+	for {
+		if v.Kind() != reflect.Ptr {
+			break
+		}
+
+		if v.IsNil() {
+			v.Set(reflect.New(v.Type().Elem()))
+		}
+
+		v = v.Elem()
+	}
+
+	return v
+}
+
 type object struct {
 	src    interface{}
 	value  reflect.Value
@@ -50,19 +70,30 @@ func decode(obj *object) {
 	n := tp.NumField()
 	for i := 0; i < n; i++ {
 		structField := tp.Field(i)
-		switch structField.Type.Kind() {
+
+		feild := indirect(v.Field(i))
+
+		switch feild.Kind() {
 		case reflect.Int:
 			tag := structField.Tag.Get("env")
 
-			v.Field(i).SetInt(int64(env.Int(tag, 0)))
+			feild.SetInt(int64(env.Int(tag, 0)))
 		case reflect.Bool:
 			tag := structField.Tag.Get("env")
 
-			v.Field(i).SetBool(env.Bool(tag, false))
+			feild.SetBool(env.Bool(tag, false))
 		case reflect.String:
 			tag := structField.Tag.Get("env")
 
-			v.Field(i).SetString(env.String(tag, ""))
+			feild.SetString(env.String(tag, ""))
+		case reflect.Struct:
+			_obj := new(object)
+			_obj.EnvSet = obj.EnvSet
+			_obj.src = obj.src
+			_obj.value = feild
+			_obj.tp = feild.Type()
+			decode(_obj)
+		default:
 		}
 	}
 
