@@ -22,8 +22,7 @@ func Decode(i interface{}) error {
     obj.src = i
     obj.tp = reflect.Indirect(v).Type()
     obj.value = reflect.Indirect(v)
-
-    Load()
+    obj.EnvSet = Load()
 
     switch reflect.Indirect(v).Kind() {
     case reflect.Struct:
@@ -36,15 +35,17 @@ func Decode(i interface{}) error {
 }
 
 type object struct {
-    src   interface{}
-    value reflect.Value
-    tp    reflect.Type
+    src    interface{}
+    value  reflect.Value
+    tp     reflect.Type
+    EnvSet EnvSet
 }
 
 func decode(obj *object) {
 
     v := obj.value
     tp := obj.tp
+    env := obj.EnvSet
 
     n := tp.NumField()
     for i := 0; i < n; i++ {
@@ -53,15 +54,15 @@ func decode(obj *object) {
         case reflect.Int:
             tag := structField.Tag.Get("env")
 
-            v.Field(i).SetInt(int64(Int(tag, 0)))
+            v.Field(i).SetInt(int64(env.Int(tag, 0)))
         case reflect.Bool:
             tag := structField.Tag.Get("env")
 
-            v.Field(i).SetBool(Bool(tag, false))
+            v.Field(i).SetBool(env.Bool(tag, false))
         case reflect.String:
             tag := structField.Tag.Get("env")
 
-            v.Field(i).SetString(String(tag, ""))
+            v.Field(i).SetString(env.String(tag, ""))
         }
     }
 

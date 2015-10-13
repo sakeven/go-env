@@ -7,16 +7,11 @@ import (
     "strings"
 )
 
-var envSet map[string]string
+type EnvSet map[string]string
 
-func Load() {
-    if envSet == nil {
-        envSet = make(map[string]string)
-    } else {
-        for k, _ := range envSet {
-            delete(envSet, k)
-        }
-    }
+func Load() EnvSet {
+
+    envSet := make(EnvSet)
 
     envs := os.Environ()
     for _, env := range envs {
@@ -28,6 +23,19 @@ func Load() {
         envSet[k] = v
     }
 
+    return envSet
+}
+
+func load(envSet EnvSet) {
+    envs := os.Environ()
+    for _, env := range envs {
+        k, v, err := parse(env)
+        if err != nil {
+            continue
+        }
+
+        envSet[k] = v
+    }
 }
 
 func parse(env string) (key string, vaule string, err error) {
@@ -41,8 +49,17 @@ func parse(env string) (key string, vaule string, err error) {
     return splits[0], splits[1], nil
 }
 
-func Int(key string, defaultValue int) (value int) {
-    v, ok := envSet[key]
+func (e *EnvSet) Reload() {
+    if *e != nil {
+        for k, _ := range *e {
+            delete(*e, k)
+        }
+    }
+    load(*e)
+}
+
+func (e EnvSet) Int(key string, defaultValue int) (value int) {
+    v, ok := e[key]
     if !ok {
         value = defaultValue
         return
@@ -58,8 +75,8 @@ func Int(key string, defaultValue int) (value int) {
     return
 }
 
-func String(key string, defaultValue string) (value string) {
-    v, ok := envSet[key]
+func (e EnvSet) String(key string, defaultValue string) (value string) {
+    v, ok := e[key]
     if !ok {
         value = defaultValue
         return
@@ -69,8 +86,8 @@ func String(key string, defaultValue string) (value string) {
     return
 }
 
-func Bool(key string, defaultValue bool) (value bool) {
-    v, ok := envSet[key]
+func (e EnvSet) Bool(key string, defaultValue bool) (value bool) {
+    v, ok := e[key]
     if !ok {
         value = defaultValue
         return

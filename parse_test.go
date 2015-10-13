@@ -7,23 +7,25 @@ import (
     . "github.com/franela/goblin"
 )
 
+var envSet = Load()
+
 func Test_Int(t *testing.T) {
     g := Goblin(t)
 
     g.Describe("Int binding", func() {
         g.It("Should get 2 ", func() {
             os.Unsetenv("TEST")
-            Load()
+            envSet.Reload()
 
-            test := Int("TEST", 2)
+            test := envSet.Int("TEST", 2)
             g.Assert(test).Equal(2)
         })
 
         g.It("Should get 1", func() {
             os.Setenv("TEST", "1")
-            Load()
+            envSet.Reload()
 
-            test := Int("TEST", 2)
+            test := envSet.Int("TEST", 2)
             g.Assert(test).Equal(1)
         })
     })
@@ -35,17 +37,17 @@ func Test_Bool(t *testing.T) {
     g.Describe("Bool binding", func() {
         g.It("Should get true ", func() {
             os.Unsetenv("TEST")
-            Load()
+            envSet.Reload()
 
-            test := Bool("TEST", true)
+            test := envSet.Bool("TEST", true)
             g.Assert(test).Equal(true)
         })
 
         g.It("Should get false", func() {
             os.Setenv("TEST", "0")
-            Load()
+            envSet.Reload()
 
-            test := Bool("TEST", true)
+            test := envSet.Bool("TEST", true)
             g.Assert(test).Equal(false)
         })
     })
@@ -57,17 +59,17 @@ func Test_String(t *testing.T) {
     g.Describe("String binding", func() {
         g.It("Should get hello ", func() {
             os.Unsetenv("TEST")
-            Load()
+            envSet.Reload()
 
-            test := String("TEST", "hello")
+            test := envSet.String("TEST", "hello")
             g.Assert(test).Equal("hello")
         })
 
         g.It("Should get world", func() {
             os.Setenv("TEST", "world")
-            Load()
+            envSet.Reload()
 
-            test := String("TEST", "hello")
+            test := envSet.String("TEST", "hello")
             g.Assert(test).Equal("world")
         })
     })
