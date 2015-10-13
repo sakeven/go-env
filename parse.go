@@ -9,6 +9,7 @@ import (
 
 type EnvSet map[string]string
 
+// Load load environment variable to parse a new EnvSet.
 func Load() EnvSet {
 
 	envSet := make(EnvSet)
@@ -49,6 +50,7 @@ func parse(env string) (key string, vaule string, err error) {
 	return splits[0], splits[1], nil
 }
 
+// Reload refresh envSet from environment.
 func (e *EnvSet) Reload() {
 	if *e != nil {
 		for k, _ := range *e {
@@ -58,6 +60,7 @@ func (e *EnvSet) Reload() {
 	load(*e)
 }
 
+// Int bind int value of specific key.
 func (e EnvSet) Int(key string, defaultValue int) (value int) {
 	v, ok := e[key]
 	if !ok {
@@ -75,6 +78,7 @@ func (e EnvSet) Int(key string, defaultValue int) (value int) {
 	return
 }
 
+// String bind string value of specific key.
 func (e EnvSet) String(key string, defaultValue string) (value string) {
 	v, ok := e[key]
 	if !ok {
@@ -86,6 +90,7 @@ func (e EnvSet) String(key string, defaultValue string) (value string) {
 	return
 }
 
+// Bool bind bool value of specific key.
 func (e EnvSet) Bool(key string, defaultValue bool) (value bool) {
 	v, ok := e[key]
 	if !ok {

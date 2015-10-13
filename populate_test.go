@@ -11,7 +11,7 @@ func Test_Decode(t *testing.T) {
 	g := Goblin(t)
 
 	type Test struct {
-		Num  int    `env:"NUMBER"`
+		Num  *int   `env:"NUMBER"`
 		Str  string `env:"HELLO"`
 		Bool bool   `env:"YES"`
 	}
@@ -28,7 +28,7 @@ func Test_Decode(t *testing.T) {
 		}
 
 		g.It("Should get int 1", func() {
-			g.Assert(test.Num).Equal(1)
+			g.Assert(*test.Num).Equal(1)
 		})
 
 		g.It("Should get string world", func() {

@@ -2,11 +2,11 @@ package env
 
 import (
 	"errors"
-	// "log"
 	"reflect"
-	// "strings"
 )
 
+// Decode parse the os environment variables and stores the result in the value pointed to by i.
+// the value pointed to by i must be string, int, bool, or struct based on string, int, bool.
 func Decode(i interface{}) error {
 	v := reflect.ValueOf(i)
 
@@ -14,19 +14,16 @@ func Decode(i interface{}) error {
 		return errors.New("not valid value")
 	}
 
-	if v.IsNil() {
-		return errors.New("can't decode nil interface")
-	}
+	v = indirect(v)
 
 	obj := new(object)
-	obj.src = i
-	obj.tp = reflect.Indirect(v).Type()
-	obj.value = reflect.Indirect(v)
+	obj.tp = v.Type()
+	obj.value = v
 	obj.EnvSet = Load()
 
-	switch reflect.Indirect(v).Kind() {
+	switch v.Kind() {
 	case reflect.Struct:
-		decode(obj)
+		obj.decode()
 	default:
 		return nil
 	}
@@ -34,12 +31,14 @@ func Decode(i interface{}) error {
 
 }
 
+// indirect get the real value that v points to or stores.
 func indirect(v reflect.Value) reflect.Value {
 	if v.Kind() != reflect.Ptr && v.CanAddr() {
 		v = v.Addr()
 	}
 
 	for {
+
 		if v.Kind() != reflect.Ptr {
 			break
 		}
@@ -55,13 +54,12 @@ func indirect(v reflect.Value) reflect.Value {
 }
 
 type object struct {
-	src    interface{}
 	value  reflect.Value
 	tp     reflect.Type
 	EnvSet EnvSet
 }
 
-func decode(obj *object) {
+func (obj *object) decode() {
 
 	v := obj.value
 	tp := obj.tp
@@ -74,25 +72,30 @@ func decode(obj *object) {
 		feild := indirect(v.Field(i))
 
 		switch feild.Kind() {
-		case reflect.Int:
-			tag := structField.Tag.Get("env")
+		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 
+			tag := structField.Tag.Get("env")
+			n := int64(env.Int(tag, 0))
+			feild.OverflowInt(n)
 			feild.SetInt(int64(env.Int(tag, 0)))
+
 		case reflect.Bool:
+
 			tag := structField.Tag.Get("env")
 
 			feild.SetBool(env.Bool(tag, false))
 		case reflect.String:
+
 			tag := structField.Tag.Get("env")
 
 			feild.SetString(env.String(tag, ""))
 		case reflect.Struct:
+
 			_obj := new(object)
 			_obj.EnvSet = obj.EnvSet
-			_obj.src = obj.src
 			_obj.value = feild
 			_obj.tp = feild.Type()
-			decode(_obj)
+			_obj.decode()
 		default:
 		}
 	}
