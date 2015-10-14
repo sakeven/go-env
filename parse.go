@@ -62,13 +62,18 @@ func (e *EnvSet) Reload() {
 
 // Int bind int value of specific key.
 func (e EnvSet) Int(key string, defaultValue int) (value int) {
+	return int(e.Int64(key, int64(defaultValue)))
+}
+
+// Int bind int value of specific key.
+func (e EnvSet) Int64(key string, defaultValue int64) (value int64) {
 	v, ok := e[key]
 	if !ok {
 		value = defaultValue
 		return
 	}
 
-	i, err := strconv.Atoi(v)
+	i, err := strconv.ParseInt(v, 10, 64)
 	if err != nil {
 		panic(err)
 		return

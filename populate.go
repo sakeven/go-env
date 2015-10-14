@@ -2,7 +2,10 @@ package env
 
 import (
 	"errors"
+	// "log"
 	"reflect"
+	"strconv"
+	"strings"
 )
 
 // Decode parse the os environment variables and stores the result in the value pointed to by i.
@@ -71,33 +74,101 @@ func (obj *object) decode() {
 
 		feild := indirect(v.Field(i))
 
+		originTag := structField.Tag.Get("env")
+		tag := Tag{Name: structField.Name}
+		tag.parseTag(originTag)
+		// log.Println(originTag, structField.Name, tag.Name)
+
+		if tag.Skip {
+			continue
+		}
+
 		switch feild.Kind() {
 		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+			defaultValue := int64(0)
+			var err error
+			if tag.Omitempty != true {
+				defaultValue, err = strconv.ParseInt(tag.Default, 10, 64)
+				if err != nil {
+					break
+				}
+			}
 
-			tag := structField.Tag.Get("env")
-			n := int64(env.Int(tag, 0))
+			n := env.Int64(tag.Name, defaultValue)
 			feild.OverflowInt(n)
-			feild.SetInt(int64(env.Int(tag, 0)))
+			feild.SetInt(n)
 
 		case reflect.Bool:
-
-			tag := structField.Tag.Get("env")
-
-			feild.SetBool(env.Bool(tag, false))
+			defaultValue := false
+			var err error
+			if tag.Omitempty != true {
+				defaultValue, err = strconv.ParseBool(tag.Default)
+				if err != nil {
+					break
+				}
+			}
+			feild.SetBool(env.Bool(tag.Name, defaultValue))
 		case reflect.String:
+			defaultValue := ""
+			if tag.Omitempty != true {
+				defaultValue = tag.Default
+			}
 
-			tag := structField.Tag.Get("env")
-
-			feild.SetString(env.String(tag, ""))
+			feild.SetString(env.String(tag.Name, defaultValue))
 		case reflect.Struct:
 
 			_obj := new(object)
 			_obj.EnvSet = obj.EnvSet
 			_obj.value = feild
 			_obj.tp = feild.Type()
+
 			_obj.decode()
 		default:
 		}
 	}
 
+}
+
+type Tag struct {
+	Name      string
+	Omitempty bool
+	Skip      bool
+	Default   string
+}
+
+func (t *Tag) parseTag(tag string) {
+	list := strings.Split(tag, ",")
+
+	var options [2]string
+
+	for i, op := range list {
+		options[i] = fix(op)
+	}
+
+	//  tag name
+	switch options[0] {
+	case "-":
+		t.Skip = true
+	case "":
+		// use origin field name
+	default:
+		t.Name = options[0]
+	}
+
+	// tag default value
+	switch options[1] {
+	case "":
+		// use omit empty value
+		t.Omitempty = true
+	default:
+		t.Default = options[1]
+	}
+
+}
+
+func fix(s string) string {
+	s = strings.Trim(s, " ")
+	s = strings.Trim(s, "\t")
+
+	return s
 }
