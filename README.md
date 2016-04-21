@@ -20,12 +20,11 @@ Usage:
 
 ```go
 // These examples demonstrate more intricate uses of the env package.
-package env_test
+package main
 
 import (
     "log"
     "os"
-    "testing"
 
     "github.com/sakeven/go-env"
 )
@@ -84,7 +83,12 @@ func LoadEnvSet() {
 
     n := envSet.Int("NUMBER", 2)
 
-    Assert(n == 2)
+    Assert(n == 1)
 }
 
+func main() {
+    ParseStruct()
+    LoadEnvSet()
+    log.Println("Parse env success")
+}
 ```
