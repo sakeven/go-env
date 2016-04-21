@@ -3,7 +3,7 @@
 // Copyright (c) 2015 Chong Jiang
 
 /*
-	Env is a go library for using environment variable to configure your project
+	go-env is a go library for using environment variable to configure your project
 	Usage:
 
 	 // Field appears in env as key "FEILD" and

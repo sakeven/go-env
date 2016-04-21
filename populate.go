@@ -86,8 +86,8 @@ func (obj *object) decode() {
 		switch feild.Kind() {
 		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 			defaultValue := int64(0)
-			var err error
 			if tag.Omitempty != true {
+				var err error
 				defaultValue, err = strconv.ParseInt(tag.Default, 10, 64)
 				if err != nil {
 					break
@@ -100,8 +100,8 @@ func (obj *object) decode() {
 
 		case reflect.Bool:
 			defaultValue := false
-			var err error
 			if tag.Omitempty != true {
+				var err error
 				defaultValue, err = strconv.ParseBool(tag.Default)
 				if err != nil {
 					break
