@@ -15,6 +15,9 @@ Usage:
     Field int `env:"FEILD,1"`
     // Field is ignored by this package.
     Field int `env:"-"`
+    // The upper key name will be used if it's a non-empty string consisting of
+    // only Unicode letters, digits, dollar signs, percent signs, hyphens, underscores and slashes.
+    Field int `env:",1"`
 ```
 # Example
 

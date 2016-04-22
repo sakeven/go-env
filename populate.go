@@ -22,7 +22,7 @@ func Decode(i interface{}) error {
 	obj := new(object)
 	obj.tp = v.Type()
 	obj.value = v
-	obj.EnvSet = Load()
+	obj.EnvSet = LoadEnvSet()
 
 	switch v.Kind() {
 	case reflect.Struct:
@@ -63,7 +63,6 @@ type object struct {
 }
 
 func (obj *object) decode() {
-
 	v := obj.value
 	tp := obj.tp
 	env := obj.EnvSet
@@ -71,13 +70,12 @@ func (obj *object) decode() {
 	n := tp.NumField()
 	for i := 0; i < n; i++ {
 		structField := tp.Field(i)
-
 		feild := indirect(v.Field(i))
 
-		originTag := structField.Tag.Get("env")
-		tag := Tag{Name: structField.Name}
-		tag.parseTag(originTag)
-		// log.Println(originTag, structField.Name, tag.Name)
+		rawStructTag := structField.Tag.Get("env")
+		tag := structTag{Name: strings.ToUpper(structField.Name)}
+		tag.parseTag(rawStructTag)
+		// log.Println(rawStructTag, structField.Name, tag.Name)
 
 		if tag.Skip {
 			continue
@@ -97,7 +95,6 @@ func (obj *object) decode() {
 			n := env.Int64(tag.Name, defaultValue)
 			feild.OverflowInt(n)
 			feild.SetInt(n)
-
 		case reflect.Bool:
 			defaultValue := false
 			if tag.Omitempty != true {
@@ -116,7 +113,6 @@ func (obj *object) decode() {
 
 			feild.SetString(env.String(tag.Name, defaultValue))
 		case reflect.Struct:
-
 			_obj := new(object)
 			_obj.EnvSet = obj.EnvSet
 			_obj.value = feild
@@ -129,15 +125,15 @@ func (obj *object) decode() {
 
 }
 
-type Tag struct {
+type structTag struct {
 	Name      string
 	Omitempty bool
 	Skip      bool
 	Default   string
 }
 
-func (t *Tag) parseTag(tag string) {
-	list := strings.Split(tag, ",")
+func (t *structTag) parseTag(rawStructTag string) {
+	list := strings.Split(rawStructTag, ",")
 
 	var options [2]string
 
@@ -163,7 +159,6 @@ func (t *Tag) parseTag(tag string) {
 	default:
 		t.Default = options[1]
 	}
-
 }
 
 func fix(s string) string {

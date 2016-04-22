@@ -7,7 +7,7 @@ import (
 	. "github.com/franela/goblin"
 )
 
-var envSet = Load()
+var envSet = LoadEnvSet()
 
 func Test_Int(t *testing.T) {
 	g := Goblin(t)

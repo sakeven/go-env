@@ -9,14 +9,13 @@ import (
 
 type EnvSet map[string]string
 
-// Load load environment variable to parse a new EnvSet.
-func Load() EnvSet {
-
+// LoadEnvSet load environment variable to parse a new EnvSet.
+func LoadEnvSet() EnvSet {
 	envSet := make(EnvSet)
 
 	envs := os.Environ()
 	for _, env := range envs {
-		k, v, err := parse(env)
+		k, v, err := parseEnv(env)
 		if err != nil {
 			continue
 		}
@@ -27,10 +26,10 @@ func Load() EnvSet {
 	return envSet
 }
 
-func load(envSet EnvSet) {
+func loadEnvSet(envSet EnvSet) {
 	envs := os.Environ()
 	for _, env := range envs {
-		k, v, err := parse(env)
+		k, v, err := parseEnv(env)
 		if err != nil {
 			continue
 		}
@@ -39,7 +38,7 @@ func load(envSet EnvSet) {
 	}
 }
 
-func parse(env string) (key string, vaule string, err error) {
+func parseEnv(env string) (key string, vaule string, err error) {
 
 	splits := strings.SplitN(env, "=", 2)
 
@@ -57,7 +56,7 @@ func (e *EnvSet) Reload() {
 			delete(*e, k)
 		}
 	}
-	load(*e)
+	loadEnvSet(*e)
 }
 
 // Int bind int value of specific key.
