@@ -40,9 +40,9 @@ func Assert(expression bool) {
 
 func ParseStruct() {
     type Inner struct {
-        Num  int    `env:"INNER_NUMBER"`
-        Str  string `env:"INNER_HELLO"`
-        Bool bool   `env:"INNER_YES"`
+        Num  int    `env:"NUMBER"`
+        Str  string `env:"HELLO"`
+        Bool bool   `env:"YES"`
     }
 
     type Test struct {

@@ -61,9 +61,9 @@ func Test_Decode_Inner(t *testing.T) {
 	g := Goblin(t)
 
 	type Inner struct {
-		Num  int    `env:"INNER_NUMBER"`
-		Str  string `env:"INNER_HELLO"`
-		Bool bool   `env:"INNER_YES"`
+		Num  int    `env:"NUMBER"`
+		Str  string `env:"HELLO"`
+		Bool bool   `env:"YES"`
 	}
 
 	type Test struct {
@@ -118,14 +118,14 @@ func Test_Decode_Inner_Pointer(t *testing.T) {
 	g := Goblin(t)
 
 	type Inner struct {
-		Num int `env:"INNER_NUMBER"`
+		Num int `env:"NUMBER"`
 	}
 
 	type Test struct {
 		Num   int    `env:"NUMBER"`
 		Str   string `env:"HELLO"`
 		Bool  bool   `env:"YES"`
-		Inner *Inner
+		Inner *Inner `env:IN`
 	}
 
 	g.Describe("Decode inner pointer struct", func() {
@@ -133,7 +133,7 @@ func Test_Decode_Inner_Pointer(t *testing.T) {
 		os.Setenv("NUMBER", "1")
 		os.Setenv("YES", "true")
 
-		os.Setenv("INNER_NUMBER", "3")
+		os.Setenv("IN_NUMBER", "3")
 
 		test := new(Test)
 		err := Decode(test)

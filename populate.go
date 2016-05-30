@@ -57,9 +57,10 @@ func indirect(v reflect.Value) reflect.Value {
 }
 
 type object struct {
-	value  reflect.Value
-	tp     reflect.Type
-	EnvSet EnvSet
+	value     reflect.Value
+	tp        reflect.Type
+	prefixTag string
+	EnvSet    EnvSet
 }
 
 func (obj *object) decode() {
@@ -74,7 +75,7 @@ func (obj *object) decode() {
 
 		rawStructTag := structField.Tag.Get("env")
 		tag := structTag{Name: strings.ToUpper(structField.Name)}
-		tag.parseTag(rawStructTag)
+		tag.parseTag(obj.prefixTag, rawStructTag)
 		// log.Println(rawStructTag, structField.Name, tag.Name)
 
 		if tag.Skip {
@@ -117,6 +118,7 @@ func (obj *object) decode() {
 			_obj.EnvSet = obj.EnvSet
 			_obj.value = feild
 			_obj.tp = feild.Type()
+			_obj.prefixTag = tag.Name
 
 			_obj.decode()
 		default:
@@ -132,7 +134,7 @@ type structTag struct {
 	Default   string
 }
 
-func (t *structTag) parseTag(rawStructTag string) {
+func (t *structTag) parseTag(prefixTag, rawStructTag string) {
 	list := strings.Split(rawStructTag, ",")
 
 	var options [2]string
@@ -149,6 +151,10 @@ func (t *structTag) parseTag(rawStructTag string) {
 		// use origin field name
 	default:
 		t.Name = options[0]
+	}
+
+	if len(prefixTag) > 0 {
+		t.Name = prefixTag + "_" + t.Name
 	}
 
 	// tag default value
