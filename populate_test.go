@@ -11,12 +11,13 @@ func Test_Decode(t *testing.T) {
 	g := Goblin(t)
 
 	type Test struct {
-		Num     *int   `env:"NUMBER"`
-		Str     string `env:"HELLO"`
-		Bool    bool   `env:"YES"`
-		Default int    `env:"DEFAULT,12"`
-		Skip    string `env:"-"`
-		Aphal   string
+		Num      *int   `env:"NUMBER"`
+		Str      string `env:"HELLO"`
+		Bool     bool   `env:"YES"`
+		Default  int    `env:"DEFAULT,12"`
+		Skip     string `env:"-"`
+		Aphal    string
+		unexport string
 	}
 
 	g.Describe("Decode test", func() {

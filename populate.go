@@ -78,7 +78,8 @@ func (obj *object) decode() {
 		tag.parseTag(obj.prefixTag, rawStructTag)
 		// log.Println(rawStructTag, structField.Name, tag.Name)
 
-		if tag.Skip {
+		if tag.Skip ||
+			(feild.CanSet() == false) {
 			continue
 		}
 
@@ -119,9 +120,7 @@ func (obj *object) decode() {
 			_obj.value = feild
 			_obj.tp = feild.Type()
 			_obj.prefixTag = tag.Name
-
 			_obj.decode()
-		default:
 		}
 	}
 
