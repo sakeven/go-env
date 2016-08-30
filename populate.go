@@ -134,7 +134,7 @@ type structTag struct {
 }
 
 func (t *structTag) parseTag(prefixTag, rawStructTag string) {
-	list := strings.Split(rawStructTag, ",")
+	list := strings.SplitN(rawStructTag, ",", 2)
 
 	var options [2]string
 
