@@ -1,7 +1,7 @@
 # go-env
 [![Build Status](https://travis-ci.org/sakeven/go-env.svg?branch=master)](https://travis-ci.org/sakeven/go-env)
-[![Go Walker](https://img.shields.io/badge/Go%20Walker-API%20Documentation-green.svg?style=flat)](https://gowalker.org/github.com/sakeven/go-env)
-[![GoDoc](https://img.shields.io/badge/GoDoc-API%20Documentation-blue.svg?style=flat)](http://godoc.org/github.com/sakeven/go-env)
+[![Go Report Card](https://goreportcard.com/badge/github.com/sakeven/go-env)](https://goreportcard.com/report/github.com/sakeven/go-env) 
+[![GoDoc](https://godoc.org/github.com/sakeven/go-env?status.svg)](http://godoc.org/github.com/sakeven/go-env)
 
 go-env is a go library for using environment variables to configure your project.
 
