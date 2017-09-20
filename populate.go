@@ -2,9 +2,7 @@ package env
 
 import (
 	"errors"
-	// "log"
 	"reflect"
-	"strconv"
 	"strings"
 )
 
@@ -22,16 +20,12 @@ func Decode(i interface{}) error {
 	obj := new(object)
 	obj.tp = v.Type()
 	obj.value = v
-	obj.EnvSet = LoadEnvSet()
+	obj.set = LoadSet()
 
-	switch v.Kind() {
-	case reflect.Struct:
-		obj.decode()
-	default:
-		return nil
+	if v.Kind() == reflect.Struct {
+		return obj.decode()
 	}
 	return nil
-
 }
 
 // indirect get the real value that v points to or stores.
@@ -41,7 +35,6 @@ func indirect(v reflect.Value) reflect.Value {
 	}
 
 	for {
-
 		if v.Kind() != reflect.Ptr {
 			break
 		}
@@ -60,13 +53,13 @@ type object struct {
 	value     reflect.Value
 	tp        reflect.Type
 	prefixTag string
-	EnvSet    EnvSet
+	set       Set
 }
 
-func (obj *object) decode() {
+func (obj *object) decode() error {
 	v := obj.value
 	tp := obj.tp
-	env := obj.EnvSet
+	env := obj.set
 
 	n := tp.NumField()
 	for i := 0; i < n; i++ {
@@ -74,101 +67,50 @@ func (obj *object) decode() {
 		feild := indirect(v.Field(i))
 
 		rawStructTag := structField.Tag.Get("env")
-		tag := structTag{Name: strings.ToUpper(structField.Name)}
-		tag.parseTag(obj.prefixTag, rawStructTag)
-		// log.Println(rawStructTag, structField.Name, tag.Name)
+		fieldName := strings.ToUpper(structField.Name)
+		tag := newStructTag(fieldName, rawStructTag).
+			withPrefix(obj.prefixTag)
 
-		if tag.Skip ||
+		// Skip this filed
+		if tag.skip ||
 			(feild.CanSet() == false) {
 			continue
 		}
 
 		switch feild.Kind() {
 		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-			defaultValue := int64(0)
-			if tag.Omitempty != true {
-				var err error
-				defaultValue, err = strconv.ParseInt(tag.Default, 10, 64)
-				if err != nil {
-					break
-				}
+			defaultValue, err := tag.defaultInt64()
+			if err != nil {
+				return err
 			}
-
-			n := env.Int64(tag.Name, defaultValue)
+			n := env.Int64(tag.name, defaultValue)
 			feild.OverflowInt(n)
 			feild.SetInt(n)
 		case reflect.Bool:
-			defaultValue := false
-			if tag.Omitempty != true {
-				var err error
-				defaultValue, err = strconv.ParseBool(tag.Default)
-				if err != nil {
-					break
-				}
+			defaultValue, err := tag.defaultBool()
+			if err != nil {
+				return err
 			}
-			feild.SetBool(env.Bool(tag.Name, defaultValue))
+			feild.SetBool(env.Bool(tag.name, defaultValue))
 		case reflect.String:
-			defaultValue := ""
-			if tag.Omitempty != true {
-				defaultValue = tag.Default
+			defaultValue, err := tag.defaultString()
+			if err != nil {
+				return err
 			}
-
-			feild.SetString(env.String(tag.Name, defaultValue))
+			feild.SetString(env.String(tag.name, defaultValue))
 		case reflect.Struct:
-			_obj := new(object)
-			_obj.EnvSet = obj.EnvSet
-			_obj.value = feild
-			_obj.tp = feild.Type()
-			_obj.prefixTag = tag.Name
-			_obj.decode()
+			_obj := &object{
+				set:       obj.set,
+				value:     feild,
+				tp:        feild.Type(),
+				prefixTag: tag.name,
+			}
+			err := _obj.decode()
+			if err != nil {
+				return err
+			}
 		}
 	}
 
-}
-
-type structTag struct {
-	Name      string
-	Omitempty bool
-	Skip      bool
-	Default   string
-}
-
-func (t *structTag) parseTag(prefixTag, rawStructTag string) {
-	list := strings.SplitN(rawStructTag, ",", 2)
-
-	var options [2]string
-
-	for i, op := range list {
-		options[i] = fix(op)
-	}
-
-	//  tag name
-	switch options[0] {
-	case "-":
-		t.Skip = true
-	case "":
-		// use origin field name
-	default:
-		t.Name = options[0]
-	}
-
-	if len(prefixTag) > 0 {
-		t.Name = prefixTag + "_" + t.Name
-	}
-
-	// tag default value
-	switch options[1] {
-	case "":
-		// use omit empty value
-		t.Omitempty = true
-	default:
-		t.Default = options[1]
-	}
-}
-
-func fix(s string) string {
-	s = strings.Trim(s, " ")
-	s = strings.Trim(s, "\t")
-
-	return s
+	return nil
 }

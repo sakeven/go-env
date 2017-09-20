@@ -126,7 +126,7 @@ func Test_Decode_Inner_Pointer(t *testing.T) {
 		Num   int    `env:"NUMBER"`
 		Str   string `env:"HELLO"`
 		Bool  bool   `env:"YES"`
-		Inner *Inner `env:IN`
+		Inner *Inner `env:"IN"`
 	}
 
 	g.Describe("Decode inner pointer struct", func() {

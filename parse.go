@@ -7,41 +7,29 @@ import (
 	"strings"
 )
 
-type EnvSet map[string]string
+// Set stores all environment variables <key, valuer> pair.
+type Set map[string]string
 
-// LoadEnvSet load environment variable to parse a new EnvSet.
-func LoadEnvSet() EnvSet {
-	envSet := make(EnvSet)
-
-	envs := os.Environ()
-	for _, env := range envs {
-		k, v, err := parseEnv(env)
-		if err != nil {
-			continue
-		}
-
-		envSet[k] = v
-	}
-
+// LoadSet load environment variables to parse a new EnvSet.
+func LoadSet() Set {
+	envSet := make(Set)
+	loadEnvSet(envSet)
 	return envSet
 }
 
-func loadEnvSet(envSet EnvSet) {
+func loadEnvSet(envSet Set) {
 	envs := os.Environ()
 	for _, env := range envs {
 		k, v, err := parseEnv(env)
 		if err != nil {
 			continue
 		}
-
 		envSet[k] = v
 	}
 }
 
 func parseEnv(env string) (key string, vaule string, err error) {
-
 	splits := strings.SplitN(env, "=", 2)
-
 	if len(splits) != 2 {
 		return "", "", fmt.Errorf("parse environment %s error", env)
 	}
@@ -50,9 +38,9 @@ func parseEnv(env string) (key string, vaule string, err error) {
 }
 
 // Reload refresh envSet from environment.
-func (e *EnvSet) Reload() {
+func (e *Set) Reload() {
 	if *e != nil {
-		for k, _ := range *e {
+		for k := range *e {
 			delete(*e, k)
 		}
 	}
@@ -60,54 +48,43 @@ func (e *EnvSet) Reload() {
 }
 
 // Int bind int value of specific key.
-func (e EnvSet) Int(key string, defaultValue int) (value int) {
+func (e Set) Int(key string, defaultValue int) int {
 	return int(e.Int64(key, int64(defaultValue)))
 }
 
-// Int bind int value of specific key.
-func (e EnvSet) Int64(key string, defaultValue int64) (value int64) {
+// Int64 bind int value of specific key.
+func (e Set) Int64(key string, defaultValue int64) int64 {
 	v, ok := e[key]
 	if !ok {
-		value = defaultValue
-		return
+		return defaultValue
 	}
 
-	i, err := strconv.ParseInt(v, 10, 64)
+	realValue, err := strconv.ParseInt(v, 10, 64)
 	if err != nil {
 		panic(err)
-		return
 	}
-
-	value = i
-	return
+	return realValue
 }
 
 // String bind string value of specific key.
-func (e EnvSet) String(key string, defaultValue string) (value string) {
-	v, ok := e[key]
+func (e Set) String(key string, defaultValue string) string {
+	realValue, ok := e[key]
 	if !ok {
-		value = defaultValue
-		return
+		return defaultValue
 	}
-
-	value = v
-	return
+	return realValue
 }
 
 // Bool bind bool value of specific key.
-func (e EnvSet) Bool(key string, defaultValue bool) (value bool) {
+func (e Set) Bool(key string, defaultValue bool) bool {
 	v, ok := e[key]
 	if !ok {
-		value = defaultValue
-		return
+		return defaultValue
 	}
 
-	i, err := strconv.ParseBool(v)
+	realValue, err := strconv.ParseBool(v)
 	if err != nil {
 		panic(err)
-		return
 	}
-
-	value = i
-	return
+	return realValue
 }

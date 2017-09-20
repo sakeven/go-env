@@ -8,17 +8,17 @@ import (
 	"github.com/sakeven/go-env"
 )
 
-func Assert(expression bool) {
+func assert(expression bool) {
 	if !expression {
-		log.Fatal("Error expression false")
+		panic("Error expression false")
 	}
 }
 
-func ParseStruct() {
+func parseStruct() {
 	type Inner struct {
-		Num  int    `env:"INNER_NUMBER"`
-		Str  string `env:"INNER_HELLO"`
-		Bool bool   `env:"INNER_YES"`
+		Num  int    `env:"NUMBER"`
+		Str  string `env:"HELLO"`
+		Bool bool   `env:"YES"`
 	}
 
 	type Test struct {
@@ -45,28 +45,28 @@ func ParseStruct() {
 		log.Fatal(err)
 	}
 
-	Assert(test.Bool == true)
-	Assert(test.Str == "world")
-	Assert(test.Num == 1)
-	Assert(test.Default == 12)
-	Assert(test.Skip == "")
-	Assert(test.Inner != nil)
-	Assert(test.Inner.Num == 3)
-	Assert(test.Inner.Bool == true)
-	Assert(test.Inner.Str == "inner world")
+	assert(test.Bool == true)
+	assert(test.Str == "world")
+	assert(test.Num == 1)
+	assert(test.Default == 12)
+	assert(test.Skip == "")
+	assert(test.Inner != nil)
+	assert(test.Inner.Num == 3)
+	assert(test.Inner.Bool == true)
+	assert(test.Inner.Str == "inner world")
 }
 
-func LoadEnvSet() {
+func loadEnvSet() {
 	os.Setenv("NUMBER", "1")
-	envSet := env.Load()
+	envSet := env.LoadSet()
 
 	n := envSet.Int("NUMBER", 2)
 
-	Assert(n == 1)
+	assert(n == 1)
 }
 
 func main() {
-	ParseStruct()
-	LoadEnvSet()
+	parseStruct()
+	loadEnvSet()
 	log.Println("Parse env success")
 }
